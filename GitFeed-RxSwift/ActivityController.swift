@@ -65,7 +65,18 @@ class ActivityController: UITableViewController {
   }
   
   func fetchEvents(repo: String) {
-    
+    let response = Observable.from([repo])
+      .map { urlString -> URL in
+        return URL(string: "https://api.github.com/repos/\(urlString)/events")!
+      }
+      .map { url -> URLRequest in
+        return URLRequest(url: url)
+      }
+      // flatten observables that perform some asynchronous work and effectively “wait” for the observable to complete, and only then let the rest of the chain continue working
+      .flatMap { request -> Observable<(response: HTTPURLResponse, data: Data)> in
+        return URLSession.shared.rx.response(request: request)
+      }
+      .share(replay: 1)
   }
   
   func processEvents(_ newEvents: [Event]) {
