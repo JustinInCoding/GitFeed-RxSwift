@@ -98,7 +98,17 @@ class ActivityController: UITableViewController {
   }
   
   func processEvents(_ newEvents: [Event]) {
-    
+    var updatedEvents = newEvents + events.value
+    if updatedEvents.count > 50 {
+      updatedEvents = [Event](updatedEvents.prefix(upTo: 50))
+    }
+    events.accept(updatedEvents)
+    // workaround to operate UI in main thread
+    DispatchQueue.main.async {
+      self.tableView.reloadData()
+      // hide the refresh control
+      self.refreshControl?.endRefreshing()
+    }
   }
   
   // MARK: - Table Data Source
