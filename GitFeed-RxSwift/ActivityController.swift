@@ -77,6 +77,24 @@ class ActivityController: UITableViewController {
         return URLSession.shared.rx.response(request: request)
       }
       .share(replay: 1)
+    
+    response
+      .filter { response, _ in
+        // What’s with that pesky, built-in ~= operator? It’s one of the lesser-known Swift operators, and when used with a range on its left side, checks if the range includes the value on its right side
+        return 200..<300 ~= response.statusCode
+      }
+      // discard the response object and take only the response data
+      .compactMap { _, data -> [Event]? in
+        // create a JSONDecoder and attempt to decode the response data as an array of Events.
+        // use a try? to return a nil value in case the decoder throws an error while decoding the JSON data
+        return try? JSONDecoder().decode([Event].self, from: data)
+      }
+      .subscribe(
+        onNext: { [weak self] newEvents in
+          self?.processEvents(newEvents)
+        }
+      )
+      .disposed(by: bag)
   }
   
   func processEvents(_ newEvents: [Event]) {

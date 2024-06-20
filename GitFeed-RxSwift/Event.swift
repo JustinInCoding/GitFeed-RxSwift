@@ -30,7 +30,7 @@
 
 import Foundation
 
-struct Event {
+struct Event: Codable {
   let action: String
   let repo: Repo
   let actor: Actor
@@ -42,7 +42,7 @@ struct Event {
   }
 }
 
-struct Repo {
+struct Repo: Codable {
   let name: String
 }
 
