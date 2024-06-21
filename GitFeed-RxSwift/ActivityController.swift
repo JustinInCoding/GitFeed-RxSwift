@@ -35,11 +35,20 @@ import RxRelay
 import RxCocoa
 import Kingfisher
 
+func cachedFileURL(_ fileName: String) -> URL {
+  return FileManager.default
+    .urls(for: .cachesDirectory, in: .allDomainsMask)
+    .first!
+    .appendingPathComponent(fileName)
+}
+
 class ActivityController: UITableViewController {
   private let repo = "ReactiveX/RxSwift"
   
   private let events = BehaviorRelay<[Event]>(value: [])
   private let bag = DisposeBag()
+  
+  private let eventsFileURL = cachedFileURL("events.json")
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -53,6 +62,13 @@ class ActivityController: UITableViewController {
     refreshControl.tintColor = UIColor.darkGray
     refreshControl.attributedTitle = NSAttributedString(string: "Pull to Refresh")
     refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    
+    // load persisted events on screen instantly before fetch the latest on server
+    let decoder = JSONDecoder()
+    if let eventsData = try? Data(contentsOf: eventsFileURL),
+       let persistedEvents = try? decoder.decode([Event].self, from: eventsData) {
+      events.accept(persistedEvents)
+    }
     
     refresh()
   }
@@ -108,6 +124,14 @@ class ActivityController: UITableViewController {
       self.tableView.reloadData()
       // hide the refresh control
       self.refreshControl?.endRefreshing()
+    }
+    
+    let encoder = JSONEncoder()
+    if let eventData = try? encoder.encode(updatedEvents) {
+      // .atomicWrite An option that attempts to write data to an auxiliary(辅助的；备用的，后备的) file first and then exchange the files
+      // Use atomic instead
+      // .atomic An option to write data to an auxiliary file first and then replace the original file with the auxiliary file when the write completes.
+      try? eventData.write(to: eventsFileURL, options: .atomic)
     }
   }
   

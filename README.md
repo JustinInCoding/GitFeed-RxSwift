@@ -6,7 +6,7 @@
 
 ## Features
 - fetch data from GitHub's JSON API, convert it to data and display on list
-- persist data into disk to display before fetch from the Github's latest data
+- persist data into disk(plist) to display before fetch from the Github's latest data
 
 ## Technologies Used
 - 
