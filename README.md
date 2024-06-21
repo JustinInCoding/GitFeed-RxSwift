@@ -38,4 +38,5 @@ Xcode - 13.2.1 (the version I created the project)
 ## Acknowledgements
 Thanks for the kodeco's team providing such a great course
 - Original Repository of Kodeco [_here_](). 
+- The GitHub JSON API: https://developer.github.com/v3/
 
